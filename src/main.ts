@@ -14,7 +14,7 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
 	const config = app.get(ConfigService)
 
-	const redis = new IORedis(config.getOrThrow<string>('REDIS_URL'))
+	const redis = new IORedis(config.getOrThrow('REDIS_URL'))
 
 	app.use(cookieParser(config.getOrThrow<string>('COOKIE_SECRET')))
 	app.useGlobalPipes(

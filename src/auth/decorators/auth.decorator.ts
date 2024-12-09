@@ -10,7 +10,7 @@ export function Authorization(...roles: UserRole[]) {
 	if (roles.length > 0) {
 		return applyDecorators(
 			Roles(...roles),
-			UseGuards(RolesGuard, AuthGuard)
+			UseGuards(AuthGuard, RolesGuard)
 		)
 	}
 

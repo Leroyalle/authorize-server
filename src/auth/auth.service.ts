@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common'
+import {
+	ConflictException,
+	Injectable,
+	InternalServerErrorException
+} from '@nestjs/common'
 import { Request } from 'express'
 import { AuthMethod, User } from 'prisma/__generated__'
 import { UserService } from 'src/user/user.service'
@@ -32,7 +36,19 @@ export class AuthService {
 
 	public async logout() {}
 
-	public async saveSession(req: Request, dto: User) {
-		console.log(dto)
+	public async saveSession(req: Request, user: User) {
+		return new Promise((resolve, reject) => {
+			req.session.userId = user.id
+			req.session.save(err => {
+				if (err) {
+					return reject(
+						new InternalServerErrorException(
+							'Не удалось сохранить сессию. Попробуйте позже'
+						)
+					)
+				}
+				resolve({ user })
+			})
+		})
 	}
 }

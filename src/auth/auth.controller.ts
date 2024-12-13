@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	Body,
 	Controller,
 	Get,
@@ -6,6 +7,7 @@ import {
 	HttpStatus,
 	Param,
 	Post,
+	Query,
 	Req,
 	Res,
 	UseGuards
@@ -40,6 +42,27 @@ export class AuthController {
 	@HttpCode(HttpStatus.OK)
 	public async login(@Req() req: Request, @Body() dto: LoginDto) {
 		return this.authService.login(req, dto)
+	}
+
+	@UseGuards(AuthProviderGuard)
+	@Get('/oauth/callback/:provider')
+	public async callback(
+		@Req() req: Request,
+		@Res({ passthrough: true }) res: Response,
+		@Query('code') code: string,
+		@Param('provider') provider: string
+	) {
+		if (!code) {
+			throw new BadRequestException(
+				'Не был предоставлен код авторизации.'
+			)
+		}
+
+		await this.authService.extractProfileFromCode(req, provider, code)
+
+		return res.redirect(
+			`${this.configService.getOrThrow<string>('ALLOWED_ORIGIN')}/dashboard/settings`
+		)
 	}
 
 	@UseGuards(AuthProviderGuard)
